@@ -9,6 +9,7 @@ export default class BasePromptComponent<P extends PromptParams> {
 
     protected name: string;
     protected message: string;
+    protected required: boolean = false;
     protected defaultValue?: any;
     protected validate: (result: any) => void | Promise<void>; // throw new PromptError("error message");
 
@@ -16,6 +17,7 @@ export default class BasePromptComponent<P extends PromptParams> {
         this.name = params.name;
         this.message = params.message ?? StringUtil.firstUpper(this.name);
         this.defaultValue = params.defaultValue;
+        this.required = params.required;
         this.validate = params.validate ?? ((result: any) => { });
     }
 
@@ -55,7 +57,7 @@ export default class BasePromptComponent<P extends PromptParams> {
         try {
             this.printPrefix();
             const input = await this.readInput();
-            if (!input) throw new PromptRequiredError();
+            if (!input && this.required) throw new PromptRequiredError();
 
             await this.validate(input);
             await this.selfValidate(input);
